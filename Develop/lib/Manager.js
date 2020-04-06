@@ -5,7 +5,7 @@ class Manager extends Employee {
     this.officeNumber = officeNumber;
   }
 
-  getOfficenumber() {
+  getOfficeNumber() {
     return this.officeNumber;
   }
 
@@ -13,3 +13,5 @@ class Manager extends Employee {
     return "Manager";
   }
 }
+
+module.exports = Manager;
