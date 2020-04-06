@@ -3,11 +3,14 @@ const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
 
 const inquirer = require("inquirer");
-const path = require("path");
-const fs = require("fs");
 
+const path = require("path");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
+
+const fs = require("fs");
+const util = require("util");
+const writeFileAsync = util.promisify(fs.writeFile);
 
 const render = require("./lib/htmlRenderer");
 
@@ -163,12 +166,25 @@ class Getdetails {
   }
 
   // Logs goodbye and exits the node app
-  quit() {
-    console.log("\nGoodbye!");
-    render(this.employees);
-    console.log("Printing employees at quit: ", this.employees);
-    console.log("Printing render: ", render(this.employees));
-    process.exit(0);
+  async quit() {
+    try {
+      this.outputFile = render(this.employees);
+
+      if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR);
+      } else {
+        console.log("Directory already exists... Overwriting team.html");
+      }
+
+      await writeFileAsync(outputPath, this.outputFile);
+      console.log(
+        "\nData successfully stored in the team.html inside output folder!"
+      );
+
+      process.exit(0);
+    } catch (err) {
+      console.log("Error writing into htnl file!");
+    }
   }
 }
 
