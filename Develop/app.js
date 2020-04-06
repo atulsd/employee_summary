@@ -12,7 +12,9 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 const render = require("./lib/htmlRenderer");
 
 class Getdetails {
-  constructor() {}
+  constructor() {
+    this.employees = [];
+  }
 
   async askBasicinfo() {
     try {
@@ -22,24 +24,47 @@ class Getdetails {
             type: "input",
             name: "role",
             message: "Enter role:",
+            validate: function (val) {
+              const input = /[a-z]/gi.test(val);
+              if (!input) {
+                console.log("Wrong input");
+              } else {
+                return /[a-z]/gi.test(val);
+              }
+            },
           },
           {
             type: "input",
             name: "name",
             message: "Enter name:",
+            validate: function (val) {
+              const input = /[a-z]/gi.test(val);
+              if (!input) {
+                console.log("Wrong input");
+              } else {
+                return /[a-z]/gi.test(val);
+              }
+            },
           },
           {
             type: "input",
             name: "email",
             message: "Enter email:",
+            validate: function (val) {
+              return /[a-z@1-9]/gi.test(val);
+            },
           },
           {
             type: "input",
             name: "id",
             message: "Enter id:",
+            validate: function (val) {
+              return /[a-z1-9@.com]/gi.test(val);
+            },
           },
         ])
         .then((response) => {
+          this.inputtedDetail = response;
           this.role = response.role.toLowerCase();
           this.extraDetail();
         });
@@ -51,23 +76,65 @@ class Getdetails {
   async extraDetail() {
     try {
       if (this.role === "manager") {
-        await inquirer.prompt({
-          type: "input",
-          name: "officeNumber",
-          message: "Enter Office Number:",
-        });
+        await inquirer
+          .prompt({
+            type: "input",
+            name: "officeNumber",
+            message: "Enter Office Number:",
+            validate: function (val) {
+              return /[1-9]/gi.test(val);
+            },
+          })
+          .then((response) => {
+            console.log("Name is:", this.inputtedDetail.name);
+            console.log("Office number:", response.officeNumber);
+            this.manager = new Manager(
+              this.inputtedDetail.name,
+              this.inputtedDetail.id,
+              this.inputtedDetail.email,
+              response.officeNumber
+            );
+            this.employees.push(this.manager);
+            console.log("Employees array after adding:", this.employees);
+          });
       } else if (this.role === "engineer") {
-        await inquirer.prompt({
-          type: "input",
-          name: "githubuser",
-          message: "Enter Github username:",
-        });
+        await inquirer
+          .prompt({
+            type: "input",
+            name: "githubuser",
+            message: "Enter Github username:",
+            validate: function (val) {
+              return /[a-z1-9]/gi.test(val);
+            },
+          })
+          .then((data) => {
+            const engineer = new Engineer(
+              this.inputtedDetail.name,
+              this.inputtedDetail.id,
+              this.inputtedDetail.email,
+              data.githubuser
+            );
+            this.employees.push(engineer);
+          });
       } else if (this.role === "intern") {
-        await inquirer.prompt({
-          type: "input",
-          name: "school",
-          message: "Enter School name:",
-        });
+        await inquirer
+          .prompt({
+            type: "input",
+            name: "school",
+            message: "Enter School name:",
+            validate: function (val) {
+              return /[a-z.1-9]/gi.test(val);
+            },
+          })
+          .then((data) => {
+            const intern = new Intern(
+              this.inputtedDetail.name,
+              this.inputtedDetail.id,
+              this.inputtedDetail.email,
+              data.school
+            );
+            this.employees.push(intern);
+          });
       }
     } catch (err) {
       console.log("Extra input error!");
@@ -98,6 +165,9 @@ class Getdetails {
   // Logs goodbye and exits the node app
   quit() {
     console.log("\nGoodbye!");
+    render(this.employees);
+    console.log("Printing employees at quit: ", this.employees);
+    console.log("Printing render: ", render(this.employees));
     process.exit(0);
   }
 }
