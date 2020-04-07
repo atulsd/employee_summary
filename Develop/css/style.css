@@ -1,0 +1,19 @@
+.team-heading {
+  background-color: rgba(187, 24, 24, 0.76);
+}
+
+.text-center {
+  color: white;
+}
+.card-header {
+  color: white;
+  background-color: rgb(67, 47, 160);
+}
+
+.card-body {
+  background-color: rgb(204, 183, 183);
+}
+
+.list-group-item {
+  font-weight: bold;
+}
