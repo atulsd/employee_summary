@@ -3,6 +3,10 @@ const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
 
 const inquirer = require("inquirer");
+const validator = require("email-validator");
+const chalk = require("chalk");
+const clear = require("clear");
+const figlet = require("figlet");
 
 const path = require("path");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
@@ -19,6 +23,15 @@ class Getdetails {
     this.employees = [];
   }
 
+  clearScreen() {
+    clear();
+    console.log(
+      chalk.greenBright(
+        figlet.textSync("Engineering Team", { horizontalLayout: "full" })
+      )
+    );
+  }
+
   async askBasicinfo() {
     try {
       await inquirer
@@ -26,13 +39,14 @@ class Getdetails {
           {
             type: "input",
             name: "role",
-            message: "Enter role:",
+            message: "Enter role m for manager, e for engineer, i for intern:",
+            default: ["m", "e", "i"],
             validate: function (val) {
-              const input = /[a-z]/gi.test(val);
+              const input = /[mei]/gi.test(val);
               if (!input) {
-                console.log("Wrong input");
+                return "Please enter an option:";
               } else {
-                return /[a-z]/gi.test(val);
+                return /[mei]/gi.test(val);
               }
             },
           },
@@ -41,11 +55,10 @@ class Getdetails {
             name: "name",
             message: "Enter name:",
             validate: function (val) {
-              const input = /[a-z]/gi.test(val);
-              if (!input) {
-                console.log("Wrong input");
-              } else {
+              if (val.length) {
                 return /[a-z]/gi.test(val);
+              } else {
+                return "Please enter name:";
               }
             },
           },
@@ -54,7 +67,11 @@ class Getdetails {
             name: "email",
             message: "Enter email:",
             validate: function (val) {
-              return /[a-z@1-9]/gi.test(val);
+              if (val.length) {
+                return validator.validate(val);
+              } else {
+                return "Please enter valid email:";
+              }
             },
           },
           {
@@ -62,7 +79,11 @@ class Getdetails {
             name: "id",
             message: "Enter id:",
             validate: function (val) {
-              return /[a-z1-9@.com]/gi.test(val);
+              if (val.length) {
+                return /[a-z1-9]/gi.test(val);
+              } else {
+                return "Please enter id:";
+              }
             },
           },
         ])
@@ -78,19 +99,21 @@ class Getdetails {
 
   async extraDetail() {
     try {
-      if (this.role === "manager") {
+      if (this.role === "m") {
         await inquirer
           .prompt({
             type: "input",
             name: "officeNumber",
             message: "Enter Office Number:",
             validate: function (val) {
-              return /[1-9]/gi.test(val);
+              if (val.length) {
+                return /[1-9]/gi.test(val);
+              } else {
+                return "Please enter office number:";
+              }
             },
           })
           .then((response) => {
-            console.log("Name is:", this.inputtedDetail.name);
-            console.log("Office number:", response.officeNumber);
             this.manager = new Manager(
               this.inputtedDetail.name,
               this.inputtedDetail.id,
@@ -98,16 +121,19 @@ class Getdetails {
               response.officeNumber
             );
             this.employees.push(this.manager);
-            console.log("Employees array after adding:", this.employees);
           });
-      } else if (this.role === "engineer") {
+      } else if (this.role === "e") {
         await inquirer
           .prompt({
             type: "input",
             name: "githubuser",
             message: "Enter Github username:",
             validate: function (val) {
-              return /[a-z1-9]/gi.test(val);
+              if (val.length) {
+                return /[a-z1-9]/gi.test(val);
+              } else {
+                return "Please enter github username:";
+              }
             },
           })
           .then((data) => {
@@ -119,14 +145,18 @@ class Getdetails {
             );
             this.employees.push(engineer);
           });
-      } else if (this.role === "intern") {
+      } else if (this.role === "i") {
         await inquirer
           .prompt({
             type: "input",
             name: "school",
             message: "Enter School name:",
             validate: function (val) {
-              return /[a-z.1-9]/gi.test(val);
+              if (val.length) {
+                return /[a-z1-9]/gi.test(val);
+              } else {
+                return "Please enter school name:";
+              }
             },
           })
           .then((data) => {
@@ -151,7 +181,7 @@ class Getdetails {
         .prompt({
           type: "confirm",
           name: "more",
-          message: "Do you want add another employee:",
+          message: "Do you want to add more employee:",
         })
         .then((response) => {
           if (response.more) {
@@ -165,7 +195,7 @@ class Getdetails {
     }
   }
 
-  // Logs goodbye and exits the node app
+  // Save Data and exits the node app
   async quit() {
     try {
       this.outputFile = render(this.employees);
@@ -190,5 +220,6 @@ class Getdetails {
 
 const getDetails = new Getdetails();
 
-// Start
+// Start the application
+getDetails.clearScreen();
 getDetails.askBasicinfo();
